@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Text.Json;
 using CoreHook.CoreLoad.Data;
 using CoreHook.IPC.Messages;
 
@@ -13,6 +14,7 @@ namespace CoreHook.CoreLoad
         /// The interface implemented by each plugin that we initialize.
         /// </summary>
         private const string EntryPointInterface = "CoreHook.IEntryPoint";
+
         /// <summary>
         /// The name of the first method called in each plugin after initializing the class.
         /// </summary>
@@ -45,26 +47,45 @@ namespace CoreHook.CoreLoad
 
                 // Start the IPC message notifier with a connection to the host application.
                 var hostNotifier = new NotificationHelper(pluginConfig.RemoteInfo.ChannelName);
-                
+
                 hostNotifier.Log($"Initializing plugin: {pluginConfig.RemoteInfo.UserLibrary}.");
 
-                IDependencyResolver resolver = CreateDependencyResolver(
-                    pluginConfig.RemoteInfo.UserLibrary);
-
+                IDependencyResolver resolver = CreateDependencyResolver(pluginConfig.RemoteInfo.UserLibrary);
                 // Construct the parameter array passed to the plugin initialization function.
-                var pluginParameters = new object[1 + pluginConfig.RemoteInfo.UserParams.Length];
-
-                hostNotifier.Log($"Initializing plugin with {pluginParameters.Length} parameter(s).");
-
-                pluginParameters[0] = pluginConfig.UnmanagedInfo;
-                for (var i = 0; i < pluginConfig.RemoteInfo.UserParams.Length; ++i)
+                hostNotifier.Log($"Plugin ReferencedAssemblies:", LogLevel.Debug);
+                foreach (var assembly in resolver.Assembly.GetReferencedAssemblies())
                 {
-                    pluginParameters[i + 1] = pluginConfig.RemoteInfo.UserParams[i];
+                    hostNotifier.Log($"{assembly}", LogLevel.Debug);
                 }
 
-                hostNotifier.Log("Deserializing parameters.");
+                hostNotifier.Log($"CoreHook.CoreLoad ReferencedAssemblies:", LogLevel.Debug);
+                foreach (var assembly in Assembly.GetExecutingAssembly().GetReferencedAssemblies())
+                {
+                    hostNotifier.Log($"{assembly}", LogLevel.Debug);
+                }
 
-                DeserializeParameters(pluginParameters, remoteInfoFormatter);
+                var pluginParameters = new object[1 + pluginConfig.RemoteInfo.UserParams.Length];
+                hostNotifier.Log($"Initializing plugin with {pluginParameters.Length - 1} pass parameter(s).");
+
+                pluginParameters[0] = pluginConfig.UnmanagedInfo;
+                hostNotifier.Log("Deserializing parameters...");
+                for (var i = 0; i < pluginConfig.RemoteInfo.UserParams.Length; ++i)
+                {
+                    using (Stream ms = new MemoryStream((byte[]) pluginConfig.RemoteInfo.UserParams[i]))
+                    {
+                        var nth = i + 1;
+                        try
+                        {
+                            pluginParameters[nth] = remoteInfoFormatter.Deserialize<object>(ms);
+                            hostNotifier.Log($"Deserializing {i + 1}th parameter success, {JsonSerializer.Serialize(pluginParameters[i + 1])}", LogLevel.Debug);
+                        }
+                        catch (Exception e)
+                        {
+                            hostNotifier.Log($"Deserializing {i + 1}th parameter failed, {e}", LogLevel.Error);
+                            throw;
+                        }
+                    }
+                }
 
                 hostNotifier.Log("Successfully deserialized parameters.");
 
@@ -74,9 +95,9 @@ namespace CoreHook.CoreLoad
                     pluginParameters,
                     hostNotifier);
 
-                return (int)pluginConfig.State;
+                return (int) pluginConfig.State;
             }
-            catch(ArgumentOutOfRangeException outOfRangeEx)
+            catch (ArgumentOutOfRangeException outOfRangeEx)
             {
                 Log(outOfRangeEx.ToString());
                 throw;
@@ -85,7 +106,8 @@ namespace CoreHook.CoreLoad
             {
                 Log(e.ToString());
             }
-            return (int)PluginInitializationState.Failed;
+
+            return (int) PluginInitializationState.Failed;
         }
 
         /// <summary>
@@ -97,7 +119,7 @@ namespace CoreHook.CoreLoad
         {
             for (int i = 1; i < paramArray.Length; ++i)
             {
-                using (Stream ms = new MemoryStream((byte[])paramArray[i]))
+                using (Stream ms = new MemoryStream((byte[]) paramArray[i]))
                 {
                     paramArray[i] = formatter.Deserialize<object>(ms);
                 }
@@ -113,9 +135,9 @@ namespace CoreHook.CoreLoad
         private static PluginInitializationState LoadPlugin(Assembly assembly, object[] paramArray, NotificationHelper hostNotifier)
         {
             Type entryPoint = FindEntryPoint(assembly);
-    
+
             MethodInfo runMethod = FindMatchingMethod(entryPoint, EntryPointMethodName, paramArray);
-            if(runMethod == null)
+            if (runMethod == null)
             {
                 Log(hostNotifier,
                     new MissingMethodException(
@@ -123,14 +145,24 @@ namespace CoreHook.CoreLoad
             }
 
             hostNotifier.Log("Found entry point, initializing plugin class.");
+            object instance = null;
+            try
+            {
+                instance = InitializeInstance(entryPoint, paramArray);
+            }
+            catch (Exception e)
+            {
+                hostNotifier.Log(e.ToString(), LogLevel.Error);
+                throw;
+            }
 
-            var instance = InitializeInstance(entryPoint, paramArray);
             if (instance == null)
             {
                 Log(hostNotifier,
                     new MissingMethodException(
                         $"Failed to find the constructor {entryPoint.Name} in {assembly.FullName}"));
             }
+
             hostNotifier.Log("Plugin successfully initialized. Executing the plugin entry point.");
 
             if (hostNotifier.SendInjectionComplete(Process.GetCurrentProcess().Id))
@@ -142,13 +174,15 @@ namespace CoreHook.CoreLoad
                 {
                     // Execute the plugin 'Run' entry point.
                     runMethod?.Invoke(instance, BindingFlags.Public | BindingFlags.Instance | BindingFlags.ExactBinding |
-                                               BindingFlags.InvokeMethod, null, paramArray, null);
+                                                BindingFlags.InvokeMethod, null, paramArray, null);
                 }
                 catch
                 {
                 }
+
                 return PluginInitializationState.Initialized;
             }
+
             return PluginInitializationState.Failed;
         }
 
@@ -167,6 +201,7 @@ namespace CoreHook.CoreLoad
                     return type;
                 }
             }
+
             return null;
         }
 
@@ -187,6 +222,7 @@ namespace CoreHook.CoreLoad
                     return method;
                 }
             }
+
             return null;
         }
 
@@ -203,7 +239,7 @@ namespace CoreHook.CoreLoad
             {
                 return false;
             }
-            
+
             for (var i = 0; i < paramArray.Length; ++i)
             {
                 if (!parameters[i].ParameterType.IsInstanceOfType(paramArray[i]))
@@ -211,6 +247,7 @@ namespace CoreHook.CoreLoad
                     return false;
                 }
             }
+
             return true;
         }
 
@@ -230,6 +267,7 @@ namespace CoreHook.CoreLoad
                     return constructor.Invoke(parameters);
                 }
             }
+
             return null;
         }
 
