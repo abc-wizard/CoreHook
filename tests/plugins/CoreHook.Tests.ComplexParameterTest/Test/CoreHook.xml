@@ -1,0 +1,350 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>CoreHook</name>
+    </assembly>
+    <members>
+        <member name="T:CoreHook.HookAccessControl">
+            <summary>
+            Class used for managing the thread ACL of a hook.
+            </summary>
+        </member>
+        <member name="M:CoreHook.HookAccessControl.SetExclusiveACL(System.Int32[])">
+            <summary>
+            Overwrite the current ACL and set an exclusive list of threads.
+            Exclusive means that all threads in <paramref name="acl"/> are
+            not intercepted and all other threads are intercepted.
+            </summary>
+            <param name="acl">List of threads to exclude from intercepting.</param>
+        </member>
+        <member name="M:CoreHook.HookAccessControl.SetInclusiveACL(System.Int32[])">
+            <summary>
+            Overwrite the current ACL and set an inclusive list of threads.
+            Inclusive means that all threads in <paramref name="acl"/> are
+            intercepted and any others not present in the list are not.
+            </summary>
+            <param name="acl">A list of threads to that are intercepted.</param>
+        </member>
+        <member name="M:CoreHook.HookAccessControl.GetEntries">
+            <summary>
+            Get a copy of the current thread list for this ACL.
+            The returned list can be edited without affecting the hook.
+            </summary>
+            <returns>A copy of the ACL's thread list.</returns>
+        </member>
+        <member name="T:CoreHook.HookFactory">
+            <summary>
+            Factory for creating managed and unmanaged hooks.
+            </summary>
+        </member>
+        <member name="M:CoreHook.HookFactory.CreateHook(System.IntPtr,System.Delegate,System.Object)">
+            <summary>
+            Create a managed hook.
+            </summary>
+            <param name="targetFunction">The target function address that will be detoured.</param>
+            <param name="detourFunction">The detour function that will be called instead of the function at <paramref name="targetFunction"/>.</param>
+            <param name="callback">A context object that can be accessed as <see cref="P:CoreHook.HookRuntimeInfo.Callback"/> by the detour function.</param>
+            <returns>The handle to the function hook.</returns>
+        </member>
+        <member name="M:CoreHook.HookFactory.CreateHook``1(System.IntPtr,``0,System.Object)">
+            <summary>
+            Create a managed hook.
+            </summary>
+            <typeparam name="TDelegate">The delegate type representing the detoured function signature.</typeparam>
+            <param name="targetFunction">The target function address that will be detoured.</param>
+            <param name="detourFunction">The detour function that will be called instead of the function at <paramref name="targetFunction"/>.</param>
+            <param name="callback">A context object that can be accessed as <see cref="P:CoreHook.HookRuntimeInfo.Callback"/> by the detour function.</param>
+            <returns>The handle to the function hook.</returns>
+        </member>
+        <member name="M:CoreHook.HookFactory.CreateHook(System.IntPtr,System.IntPtr,System.Nullable{System.IntPtr})">
+            <summary>
+            Create an unmanaged hook.
+            </summary>
+            <param name="targetFunction">The target function address that will be detoured.</param>
+            <param name="detourFunction">The detour function that will be called instead of the function at <paramref name="targetFunction"/>.</param>
+            <param name="callback">An object that is associated with the hook and can be accessed by the detour function.</param>
+            <returns>The handle to the function hook.</returns>
+        </member>
+        <member name="M:CoreHook.HookFactory.CreateHook``1(System.IntPtr,System.IntPtr,System.Nullable{System.IntPtr})">
+            <summary>
+            Create an unmanaged hook.
+            </summary>
+            <typeparam name="TDelegate">The delegate type representing the detoured function signature.</typeparam>
+            <param name="targetFunction">The target function address that will be detoured.</param>
+            <param name="detourFunction">The detour function that will be called instead of the function at <paramref name="targetFunction"/>.</param>
+            <param name="callback">An object that is associated with the hook and can be accessed by the detour function.</param>
+            <returns>The handle to the function hook.</returns>
+        </member>
+        <member name="T:CoreHook.HookRuntimeInfo">
+            <summary>
+            Holds context information used within detour handlers.
+            </summary>
+        </member>
+        <member name="P:CoreHook.HookRuntimeInfo.IsHandlerContext">
+            <summary>
+            Determine if the current thread is within a hook handler.
+            True if the current method was called from a detoured function.
+            </summary>
+        </member>
+        <member name="P:CoreHook.HookRuntimeInfo.Callback">
+            <summary>
+            The user callback parameter passed to the hook class during creation.
+            For example: a class handle.
+            </summary>
+        </member>
+        <member name="P:CoreHook.HookRuntimeInfo.Handle">
+            <summary>
+            The class that manages the function detour.
+            </summary>
+        </member>
+        <member name="T:CoreHook.IContext">
+            <summary>
+            Passed to each CoreHook module as the first parameter.
+            It contains user-defined information that is available
+            to every plugin when loaded.
+            </summary>
+        </member>
+        <member name="T:CoreHook.IEntryPoint">
+            <summary>
+            Used for finding the entry point of a plugin to load.
+            Each plugin must have a class that inherits from this interface.
+            The class must have a method called 'Run', which is executed
+            when the module is being initialized.
+            </summary>
+        </member>
+        <member name="T:CoreHook.IHook">
+            <summary>
+            Interface for a hooking class that manages installs and uninstalls of function detours.
+            </summary>
+        </member>
+        <member name="P:CoreHook.IHook.Callback">
+            <summary>
+            Object associated with the detour handle that can be
+            accessed inside the detour handler, for example a class.
+            </summary>
+        </member>
+        <member name="P:CoreHook.IHook.Enabled">
+            <summary>
+            Activate or de-activate the detour using the <see cref="P:CoreHook.IHook.ThreadACL"/>.
+            </summary>
+        </member>
+        <member name="P:CoreHook.IHook.TargetAddress">
+            <summary>
+            Address of the function that is detoured.
+            </summary>
+        </member>
+        <member name="P:CoreHook.IHook.OriginalAddress">
+            <summary>
+            Address for calling the target function, bypassing the detour function.
+            </summary>
+        </member>
+        <member name="P:CoreHook.IHook.ThreadACL">
+            <summary>
+            Class for managing the list of threads that are detoured.
+            </summary>
+        </member>
+        <member name="T:CoreHook.IHookAccessControl">
+            <summary>
+            Manages the list of threads that are intercepted for each detour.
+            </summary>
+        </member>
+        <member name="P:CoreHook.IHookAccessControl.IsExclusive">
+            <summary>
+            True if the current thread ACL is exclusive, as described in
+            <see cref="M:CoreHook.IHookAccessControl.SetExclusiveACL(System.Int32[])"/>.
+            </summary>
+        </member>
+        <member name="P:CoreHook.IHookAccessControl.IsInclusive">
+            <summary>
+            True if the current thread ACL is inclusive, as described in 
+            <see cref="M:CoreHook.IHookAccessControl.SetInclusiveACL(System.Int32[])"/>.
+            </summary>
+        </member>
+        <member name="M:CoreHook.IHookAccessControl.SetInclusiveACL(System.Int32[])">
+            <summary>
+            Overwrite the current ACL and set an inclusive list of threads.
+            Inclusive means that all threads in <paramref name="acl"/> are
+            intercepted and any others not present in the list are not.
+            </summary>
+            <param name="acl">A list of threads to that are intercepted.</param>
+        </member>
+        <member name="M:CoreHook.IHookAccessControl.SetExclusiveACL(System.Int32[])">
+            <summary>
+            Overwrite the current ACL and set an exclusive list of threads.
+            Exclusive means that all threads in <paramref name="acl"/> are
+            not intercepted and all other threads are intercepted.
+            </summary>
+            <param name="acl">List of threads to exclude from intercepting.</param>
+        </member>
+        <member name="M:CoreHook.IHookAccessControl.GetEntries">
+            <summary>
+            Get a copy of the current thread list for this ACL.
+            The returned list can be edited without affecting the hook.
+            </summary>
+            <returns>A copy of the ACL's thread list.</returns>
+        </member>
+        <member name="T:CoreHook.IHook`1">
+            <summary>
+            Interface for a hooking class that manages installs and uninstalls of function detours.
+            It requires a defining a function delegate type for the function that is being detoured.
+            </summary>
+            <typeparam name="T">A type representing the target function's delegate or signature.</typeparam>
+        </member>
+        <member name="P:CoreHook.IHook`1.Original">
+            <summary>
+            The original function address, called to bypass the detour.
+            </summary>
+        </member>
+        <member name="P:CoreHook.IHook`1.Target">
+            <summary>
+            The target address where the detour is installed to.
+            </summary>
+        </member>
+        <member name="T:CoreHook.LocalHook">
+            <summary>
+            Class for creating and managing a function hook.
+            </summary>
+        </member>
+        <member name="F:CoreHook.LocalHook.DefaultThreadAcl">
+            <summary>
+            ACL used to activate or de-activate a detour for all threads.
+            </summary>
+        </member>
+        <member name="P:CoreHook.LocalHook.ThreadACL">
+            <summary>
+            Get the thread ACL handle for this hook.
+            </summary>
+        </member>
+        <member name="P:CoreHook.LocalHook.Callback">
+            <summary>
+            Context object passed in during detour creation to <see cref="M:CoreHook.LocalHook.Create(System.IntPtr,System.Delegate,System.Object)"/>
+            </summary>
+        </member>
+        <member name="P:CoreHook.LocalHook.OriginalAddress">
+            <summary>
+            Get the address used to call the original function,
+            bypassing the user detour.
+            </summary>
+        </member>
+        <member name="P:CoreHook.LocalHook.TargetAddress">
+            <summary>
+            Address of the function that is detoured.
+            </summary>
+        </member>
+        <member name="P:CoreHook.LocalHook.Enabled">
+            <summary>
+            Determines if a detour is active or inactive for all threads.
+            </summary>
+        </member>
+        <member name="M:CoreHook.LocalHook.GetProcAddress(System.String,System.String)">
+            <summary>
+            Get the address for a function located in a module that is loaded in the current process.
+            </summary>
+            <param name="module">A library name like "kernel32.dll" or a full path to the module.</param>
+            <param name="function">The name of the function, such as "CreateFileW".</param>
+            <returns>The address of the given function name in the process.</returns>
+        </member>
+        <member name="M:CoreHook.LocalHook.Create(System.IntPtr,System.Delegate,System.Object)">
+            <summary>
+            Install a managed hook with a managed delegate for the hook handler.
+            </summary>
+            <param name="targetFunction">The target function to install the detour at.</param>
+            <param name="detourFunction">The hook handler which intercepts the target function.</param>
+            <param name="callback">A context object that will be available for reference inside the detour.</param>
+            <returns>The handle to the function hook.</returns>
+        </member>
+        <member name="M:CoreHook.LocalHook.CreateUnmanaged(System.IntPtr,System.IntPtr,System.IntPtr)">
+            <summary>
+            Install an unmanaged hook using the pointer to a hook handler.
+            </summary>
+            <param name="targetFunction">The target function to install the detour at.</param>
+            <param name="detourFunction">The hook handler which intercepts the target function.</param>
+            <param name="callback">A context object that will be available for reference inside the detour.</param>
+            <returns>The handle to the function hook.</returns>
+        </member>
+        <member name="M:CoreHook.LocalHook.InstallHook(CoreHook.LocalHook,System.IntPtr,System.IntPtr,System.IntPtr)">
+            <summary>
+            Install a hook handler to a target function using a pointer to a hook handler.
+            </summary>
+            <param name="hook">The hooking class that manages the detour.</param>
+            <param name="targetFunction">The target function to install the detour at.</param>
+            <param name="detourFunction">The hook handler which intercepts the target function.</param>
+            <param name="callback">A context object that will be available for reference inside the detour.</param>
+        </member>
+        <member name="M:CoreHook.LocalHook.Dispose">
+            <summary>
+            Dispose the hook and uninstall the detour from the target function.
+            </summary>
+        </member>
+        <member name="M:CoreHook.LocalHook.Finalize">
+            <summary>
+            Ensure the function hook is uninstalled and any held resources are freed.
+            </summary>
+        </member>
+        <member name="T:CoreHook.LocalHook`1">
+            <summary>
+            Class for creating and managing a function hook.
+            </summary>
+            <typeparam name="T">A type representing the target function's delegate or signature.</typeparam>
+        </member>
+        <member name="P:CoreHook.LocalHook`1.Original">
+            <summary>
+            Delegate used to call the original function by bypassing the detour.
+            </summary>
+        </member>
+        <member name="P:CoreHook.LocalHook`1.Target">
+            <summary>
+            Delegate used to call the target function directly,
+            where any detour that is activated will be called as well.
+            </summary>
+        </member>
+        <member name="M:CoreHook.LocalHook`1.CreateUnmanaged(System.IntPtr,System.IntPtr,System.IntPtr)">
+            <summary>
+            Installs an unmanaged hook using the pointer to a hook handler.
+            </summary>
+            <param name="targetFunction">The target function to install the detour at.</param>
+            <param name="detourFunction">The hook handler which intercepts the target function.</param>
+            <param name="callback">A context object that will be available for reference inside the detour.</param>
+            <returns>The handle to the function hook.</returns>
+        </member>
+        <member name="M:CoreHook.LocalHook`1.Create(System.IntPtr,System.Delegate,System.Object)">
+            <summary>
+            Install a managed hook with a managed delegate for the hook handler.
+            </summary>
+            <param name="targetFunction">The target function to install the detour at.</param>
+            <param name="detourFunction">The hook handler which intercepts the target function.</param>
+            <param name="callback">A context object that will be available for reference inside the detour.</param>
+            <returns>The handle to the function hook.</returns>
+        </member>
+        <member name="M:CoreHook.LocalHook`1.IsThreadIntercepted(System.Int32)">
+            <summary>
+            Determine if a thread is to be intercepted by the user detour.
+            </summary>
+            <param name="threadId">Native thread ID to check, or zero for the current thread.</param>
+            <returns>True if the thread is intercepted.</returns>
+        </member>
+        <member name="T:CoreHook.NativeApi">
+            <summary>
+            APIs for calling into the native detouring module.
+            </summary>
+        </member>
+        <member name="F:CoreHook.NativeApi.Is64Bit">
+            <summary>
+            Determine if the current application is 32 or 64 bit.
+            </summary>
+        </member>
+        <member name="T:CoreHook.PointerExtensions">
+            <summary>
+            IntPtr extensions for creating delegates from function pointers.
+            </summary>
+        </member>
+        <member name="M:CoreHook.PointerExtensions.ToFunction``1(System.IntPtr)">
+            <summary>
+            Convert a function address to a callable delegate method.
+            </summary>
+            <typeparam name="TDelegate">The delegate type to cast the function to.</typeparam>
+            <param name="function">A function address.</param>
+            <returns>The callable delegate method at <paramref name="function"/>.</returns>
+        </member>
+    </members>
+</doc>

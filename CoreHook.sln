@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27428.2043
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30709.132
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{C1E373D4-037B-4479-9AF5-EE4E08642585}"
 EndProject
@@ -44,6 +44,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{651578A4-4B76-4A11-897F-45A3D5714574}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoreHook.Tests", "tests\CoreHook.Tests\CoreHook.Tests.csproj", "{AAAC3722-8911-4F80-8232-840D81F8C938}"
+	ProjectSection(ProjectDependencies) = postProject
+		{AF446E9D-9530-4DBE-BD44-9BCF7D569AB6} = {AF446E9D-9530-4DBE-BD44-9BCF7D569AB6}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "plugins", "plugins", "{BFEBEA69-1024-42F8-A2D5-B1B43E6CE719}"
 EndProject
@@ -60,6 +63,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoreHook.Tests.ComplexParameterTest", "tests\plugins\CoreHook.Tests.ComplexParameterTest\CoreHook.Tests.ComplexParameterTest.csproj", "{AF446E9D-9530-4DBE-BD44-9BCF7D569AB6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoreHook.Tests.Plugins.Shared", "tests\plugins\CoreHook.Tests.Plugins.Shared\CoreHook.Tests.Plugins.Shared.csproj", "{5C04FCAA-2E32-44EC-B838-B432CFCBB073}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoreHook.Win32", "src\CoreHook.Win32\CoreHook.Win32.csproj", "{9D952816-F7DB-4833-A0CB-FEFF6A9DC503}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -143,6 +148,10 @@ Global
 		{5C04FCAA-2E32-44EC-B838-B432CFCBB073}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5C04FCAA-2E32-44EC-B838-B432CFCBB073}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5C04FCAA-2E32-44EC-B838-B432CFCBB073}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9D952816-F7DB-4833-A0CB-FEFF6A9DC503}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9D952816-F7DB-4833-A0CB-FEFF6A9DC503}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9D952816-F7DB-4833-A0CB-FEFF6A9DC503}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9D952816-F7DB-4833-A0CB-FEFF6A9DC503}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -172,6 +181,7 @@ Global
 		{74E65AD3-BCD9-4580-A5ED-8972D5A3AAA0} = {6F6AB2BD-CB01-4B87-88B0-BA00D15BD8D5}
 		{AF446E9D-9530-4DBE-BD44-9BCF7D569AB6} = {BFEBEA69-1024-42F8-A2D5-B1B43E6CE719}
 		{5C04FCAA-2E32-44EC-B838-B432CFCBB073} = {BFEBEA69-1024-42F8-A2D5-B1B43E6CE719}
+		{9D952816-F7DB-4833-A0CB-FEFF6A9DC503} = {397BC2E9-F70B-4C68-A6B3-405AFB6123CE}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7F1E6A8F-CBCB-4F01-B2C4-446C6F3AD674}
