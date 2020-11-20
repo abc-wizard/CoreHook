@@ -25,4 +25,23 @@
         <ProjectReference Include="..\..\..\src\CoreHook.IPC\CoreHook.IPC.csproj"/>
         <ProjectReference Include="..\CoreHook.FileMonitor.Service\CoreHook.FileMonitor.Service.csproj"/>
     </ItemGroup>
+
+    <ItemGroup>
+        <None Update="CoreHook.CoreLoad.runtimeconfig.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+
+        <None Include="..\..\..\deps\coreload\win-x86\coreload32.dll">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Include="..\..\..\deps\coreload\win-x64\coreload64.dll">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Include="..\..\..\deps\corehook\win-x86\corehook32.dll">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Include="..\..\..\deps\corehook\win-x64\corehook64.dll">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
 </Project>
