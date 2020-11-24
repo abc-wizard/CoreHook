@@ -5,6 +5,7 @@
         <TargetFramework>netstandard2.0</TargetFramework>
         <Platforms>AnyCPU</Platforms>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <PackageId>NetHook.Win32</PackageId>
     </PropertyGroup>
  
     <ItemGroup>
