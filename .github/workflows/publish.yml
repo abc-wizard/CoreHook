@@ -7,7 +7,7 @@ name: publish
 on:
   push:
     tags:
-      - 'v[0-9].[0-9]+.[0-9]+*'
+      - "v[0-9].[0-9]+.[0-9]+*"
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -20,23 +20,23 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - run: dotnet build Publish.sln -c Release
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: "5.0"
 
-      - name: get and echo version
+      - name: get version and echo to $GITHUB_ENV
         run: |
           echo "VERSION=${GITHUB_REF/refs\/tags\/v/}" >> $GITHUB_ENV
           echo "V_VERSION=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
           echo 'Env.VERSION: ${{env.VERSION}}'
           echo 'Env.V_VERSION: ${{env.V_VERSION}}'
 
-      - name: Add private GitHub registry to NuGet
-        run: dotnet nuget add source https://nuget.pkg.github.com/abc-wizard/index.json -n github -u abc-wizard -p ${{secrets.GITHUB_TOKEN}} --store-password-in-clear-text
+      - name: Build
+        run: dotnet build Publish.sln -c Release
 
       - name: Pack
-        run: |
-          dotnet pack Publish.sln -c Release -o Publish -p:PackageVersion=${{env.VERSION}}
+        run: dotnet pack Publish.sln -c Release -o Publish -p:PackageVersion=${{env.VERSION}}
 
-      - name: Push generated packages to GitHub
-        run: |
-          dotnet nuget --version
-          dotnet nuget push "Publish/*.${{env.VERSION}}.nupkg" --source "github" --skip-duplicate
+      - name: Push
+        run: dotnet nuget push "Publish/*.${{env.VERSION}}.nupkg" --skip-duplicate -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_ORG_APIKEY }}
